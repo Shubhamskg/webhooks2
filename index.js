@@ -30,7 +30,7 @@ const sendWhatsAppMessage = async (businessPhoneNumberId, data) => {
 };
 app.post("/webhook", async (req, res) => {
   const status = req.body?.entry?.[0]?.changes?.[0]?.value?.statuses?.[0]?.status;
-  console.log("json",req.body.entry?.[0].changes[0])
+  console.log("json",JSON.stringify(req.body.entry?.[0].changes[0],null,0))
   if(status)
   console.log("status", status);
   const field = req.body.entry[0].changes[0].field;
@@ -60,51 +60,9 @@ app.post("/webhook", async (req, res) => {
   if(messages_id)
   console.log("id",messages_id)
   try {
-    if (payload=="Proceed") {
+    if (payload=="Excellent"||payload=="Average"||payload=="Poor") {
+      if(payload=="Excellent") score+=1
       const sent_res = await sendWhatsAppMessage(
-        businessPhoneNumberId,
-        {
-          messaging_product: "whatsapp",
-          recipient_type: "individual",
-          to: contacts,
-          type: "interactive",
-          interactive: {
-            type: "button",
-            body: { text: "Please rate your experience:\n" },
-            action: {
-              buttons: [
-                {
-                  type: "reply",
-                  reply: {
-                    id: "q1_rating_excellent",
-                    title: "Excellent"
-                  }
-                },
-                {
-                  type: "reply",
-                  reply: {
-                    id: "q1_rating_average",
-                    title: "Average"
-                  }
-                },
-                {
-                  type: "reply",
-                  reply: {
-                    id: "q1_rating_poor",
-                    title: "Poor"
-                  }
-                }
-              ]
-            },
-          },
-        }
-      );
-      console.log("sent_res", sent_res.status);
-     
-    } 
-    else if (messages?.interactive?.button_reply?.id.includes("q1")) {
-      score += messages?.interactive?.button_reply?.id.includes("excellent") ? 1 : 0;
-      await sendWhatsAppMessage(
         businessPhoneNumberId,
         {
           messaging_product: "whatsapp",
@@ -142,7 +100,50 @@ app.post("/webhook", async (req, res) => {
           },
         }
       );
+      console.log("sent_res", sent_res.status);
+     
     } 
+    // else if (messages?.interactive?.button_reply?.id.includes("q1")) {
+    //   score += messages?.interactive?.button_reply?.id.includes("excellent") ? 1 : 0;
+    //   await sendWhatsAppMessage(
+    //     businessPhoneNumberId,
+    //     {
+    //       messaging_product: "whatsapp",
+    //       recipient_type: "individual",
+    //       to: contacts,
+    //       type: "interactive",
+    //       interactive: {
+    //         type: "button",
+    //         body: { text: "How likely are you to recommend Greenwall Dental Clinic?\n" },
+    //         action: {
+    //           buttons: [
+    //             {
+    //               type: "reply",
+    //               reply: {
+    //                 id: "q2_rating_excellent",
+    //                 title: "Excellent"
+    //               }
+    //             },
+    //             {
+    //               type: "reply",
+    //               reply: {
+    //                 id: "q2_rating_average",
+    //                 title: "Average"
+    //               }
+    //             },
+    //             {
+    //               type: "reply",
+    //               reply: {
+    //                 id: "q2_rating_poor",
+    //                 title: "Poor"
+    //               }
+    //             }
+    //           ]
+    //         },
+    //       },
+    //     }
+    //   );
+    // } 
     else if (messages?.interactive?.button_reply?.id.includes("q2")) {
 
       score += messages?.interactive?.button_reply?.id.includes("excellent") ? 1 : 0;
