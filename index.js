@@ -30,12 +30,16 @@ const sendWhatsAppMessage = async (businessPhoneNumberId, data) => {
 };
 app.post("/webhook", async (req, res) => {
   const status = req.body?.entry?.[0]?.changes?.[0]?.value?.statuses?.[0]?.status;
+  if(status)
   console.log("status", status);
   const field = req.body.entry[0].changes[0].field;
+  if(field)
   console.log("field", field);
   const contacts = req.body?.entry?.[0]?.changes?.[0]?.value?.contacts?.[0]?.wa_id||
   req.body?.entry?.[0]?.changes?.[0]?.value?.statuses?.[0]?.recipient_id;
+  console.log("contact",contacts)
   const messages = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+  if(messages)
   console.log("messages",messages)
   const businessPhoneNumberId = req.body.entry?.[0].changes?.[0]?.value?.metadata?.phone_number_id;
   if (messages !== undefined) console.log("messages", messages);
@@ -49,8 +53,10 @@ app.post("/webhook", async (req, res) => {
     return res.sendStatus(400);
   }
   const payload=messages?.button?.payload
+  if(payload)
   console.log("payload",payload)
   const messages_id=messages?.id
+  if(messages_id)
   console.log("id",messages_id)
   try {
     if (payload=="Proceed") {
