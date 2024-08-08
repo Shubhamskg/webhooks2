@@ -28,20 +28,75 @@ const sendWhatsAppMessage = async (businessPhoneNumberId, data) => {
     throw error;
   }
 };
-
 app.post("/webhook", async (req, res) => {
-  const contacts = req.body?.entry?.[0]?.changes?.[0]?.value?.contacts?.[0]?.wa_id;
+  const status = req.body?.entry?.[0]?.changes?.[0]?.value?.statuses?.[0]?.status;
+  console.log("status", status);
+  const field = req.body.entry[0].changes[0].field;
+  console.log("field", field);
+  const contacts = req.body?.entry?.[0]?.changes?.[0]?.value?.contacts?.[0]?.wa_id||
+  req.body?.entry?.[0]?.changes?.[0]?.value?.statuses?.[0]?.recipient_id;
   const messages = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+  console.log("messages",messages)
   const businessPhoneNumberId = req.body.entry?.[0].changes?.[0]?.value?.metadata?.phone_number_id;
-  if(messages!=undefined)
-  console.log("messages", messages);
-  if (!contacts || !messages || !businessPhoneNumberId) {
+  if (messages !== undefined) console.log("messages", messages);
+
+  if (!messages && field !== "messages") {
     return res.sendStatus(400);
   }
 
+  if (!contacts) {
+    console.error("Contacts (recipient ID) is undefined or missing");
+    return res.sendStatus(400);
+  }
+  const payload=messages?.button?.payload
+  console.log("payload",payload)
+  const messages_id=messages?.id
+  console.log("id",messages_id)
   try {
-    if (messages?.interactive?.button_reply?.id.includes("q1")) {
-      score += messages?.interactive?.button_reply?.id.includes("excellent")?1:0;
+    if (payload=="Proceed") {
+      const sent_res = await sendWhatsAppMessage(
+        businessPhoneNumberId,
+        {
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: contacts,
+          type: "interactive",
+          interactive: {
+            type: "button",
+            body: { text: "Please rate your experience:\n" },
+            action: {
+              buttons: [
+                {
+                  type: "reply",
+                  reply: {
+                    id: "q1_rating_excellent",
+                    title: "Excellent"
+                  }
+                },
+                {
+                  type: "reply",
+                  reply: {
+                    id: "q1_rating_average",
+                    title: "Average"
+                  }
+                },
+                {
+                  type: "reply",
+                  reply: {
+                    id: "q1_rating_poor",
+                    title: "Poor"
+                  }
+                }
+              ]
+            },
+          },
+        }
+      );
+      console.log("sent_res", sent_res.status);
+     
+    } 
+    else if (messages?.interactive?.button_reply?.id.includes("q1")) {
+      score += messages?.interactive?.button_reply?.id.includes("excellent") ? 1 : 0;
       await sendWhatsAppMessage(
         businessPhoneNumberId,
         {
@@ -54,34 +109,36 @@ app.post("/webhook", async (req, res) => {
             body: { text: "How likely are you to recommend Greenwall Dental Clinic?\n" },
             action: {
               buttons: [
-        {
-          type: "reply",
-          reply: {
-            id: "q2_rating_excellent",
-            title: "Excellent"
-          }
-        },
-        {
-          type: "reply",
-          reply: {
-            id: "q2_rating_average",
-            title: "Average"
-          }
-        },
-        {
-          type: "reply",
-          reply: {
-            id: "q2_rating_poor",
-            title: "Poor"
-          }
-        }
-      ]
+                {
+                  type: "reply",
+                  reply: {
+                    id: "q2_rating_excellent",
+                    title: "Excellent"
+                  }
+                },
+                {
+                  type: "reply",
+                  reply: {
+                    id: "q2_rating_average",
+                    title: "Average"
+                  }
+                },
+                {
+                  type: "reply",
+                  reply: {
+                    id: "q2_rating_poor",
+                    title: "Poor"
+                  }
+                }
+              ]
             },
           },
         }
       );
-    }else if (messages?.interactive?.button_reply?.id.includes("q2")) {
-      score += messages?.interactive?.button_reply?.id.includes("excellent")?1:0;
+    } 
+    else if (messages?.interactive?.button_reply?.id.includes("q2")) {
+
+      score += messages?.interactive?.button_reply?.id.includes("excellent") ? 1 : 0;
       await sendWhatsAppMessage(
         businessPhoneNumberId,
         {
@@ -91,37 +148,39 @@ app.post("/webhook", async (req, res) => {
           type: "interactive",
           interactive: {
             type: "button",
-            body: { text: "How happy are you with your clinical results\n" },
+            body: { text: "How happy are you with your clinical results?\n" },
             action: {
               buttons: [
-        {
-          type: "reply",
-          reply: {
-            id: "q3_rating_excellent",
-            title: "Very"
-          }
-        },
-        {
-          type: "reply",
-          reply: {
-            id: "q3_rating_average",
-            title: "Moderate"
-          }
-        },
-        {
-          type: "reply",
-          reply: {
-            id: "q3_rating_poor",
-            title: "Unhappy"
-          }
-        }
-      ]
+                {
+                  type: "reply",
+                  reply: {
+                    id: "q3_rating_excellent",
+                    title: "Very"
+                  }
+                },
+                {
+                  type: "reply",
+                  reply: {
+                    id: "q3_rating_average",
+                    title: "Moderate"
+                  }
+                },
+                {
+                  type: "reply",
+                  reply: {
+                    id: "q3_rating_poor",
+                    title: "Unhappy"
+                  }
+                }
+              ]
             },
           },
         }
       );
-    } else if (messages?.interactive?.button_reply?.id.includes("q3")) {
-      score += messages?.interactive?.button_reply?.id.includes("excellent")?1:0;
+    }
+     else if (messages?.interactive?.button_reply?.id.includes("q3")) {
+
+      score += messages?.interactive?.button_reply?.id.includes("excellent") ? 1 : 0;
       await sendWhatsAppMessage(
         businessPhoneNumberId,
         {
@@ -131,39 +190,40 @@ app.post("/webhook", async (req, res) => {
           type: "interactive",
           interactive: {
             type: "button",
-            body: { text: "How happy are you with your clinical results\n" },
+            body: { text: "How happy are you with your clinical results?\n" },
             action: {
               buttons: [
-        {
-          type: "reply",
-          reply: {
-            id: "q4_rating_excellent",
-            title: "Excellent"
-          }
-        },
-        {
-          type: "reply",
-          reply: {
-            id: "q4_rating_average",
-            title: "Average"
-          }
-        },
-        {
-          type: "reply",
-          reply: {
-            id: "q4_rating_poor",
-            title: "Poor"
-          }
-        }
-      ]
+                {
+                  type: "reply",
+                  reply: {
+                    id: "q4_rating_excellent",
+                    title: "Excellent"
+                  }
+                },
+                {
+                  type: "reply",
+                  reply: {
+                    id: "q4_rating_average",
+                    title: "Average"
+                  }
+                },
+                {
+                  type: "reply",
+                  reply: {
+                    id: "q4_rating_poor",
+                    title: "Poor"
+                  }
+                }
+              ]
             },
           },
         }
       );
     } 
     else if (messages?.interactive?.button_reply?.id.includes("q4")) {
-      score += messages?.interactive?.button_reply?.id.includes("excellent")?1:0;
-      if (score>=4) {
+
+      score += messages?.interactive?.button_reply?.id.includes("excellent") ? 1 : 0;
+      if (score >= 4) {
         await sendWhatsAppMessage(
           businessPhoneNumberId,
           {
@@ -175,7 +235,7 @@ app.post("/webhook", async (req, res) => {
             }
           }
         );
-        score=0
+        score = 0;
       } else {
         await sendWhatsAppMessage(
           businessPhoneNumberId,
@@ -206,26 +266,28 @@ app.post("/webhook", async (req, res) => {
                 ]
               },
             },
-            context: { message_id: messages.id },
+            context: { message_id: messages?.id },
           }
         );
       }
-    } else if (messages?.type === "interactive" && messages?.interactive?.button_reply?.id === "improve_experience_yes") {
-        await sendWhatsAppMessage(
-          businessPhoneNumberId,
-          {
-            messaging_product: "whatsapp",
-            recipient_type: "individual",
-            to: contacts,
-            type: "text",
-            text: {
-              body: "What could we do to make your experience ten times better?"
-            },
-            context: { message_id: messages.id },
-          }
-        );
-        score=0
-    }else{
+    } 
+    else if (messages?.type === "interactive" && messages?.interactive?.button_reply?.id === "improve_experience_yes") {
+      await sendWhatsAppMessage(
+        businessPhoneNumberId,
+        {
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: contacts,
+          type: "text",
+          text: {
+            body: "What could we do to make your experience ten times better?"
+          },
+          context: { message_id: messages?.id },
+        }
+      );
+      score = 0;
+    } 
+    else if(messages_id && !payload){
       await sendWhatsAppMessage(
         businessPhoneNumberId,
         {
@@ -236,12 +298,12 @@ app.post("/webhook", async (req, res) => {
           text: {
             body: "Thank you for providing feedback to us."
           },
-          context: { message_id: messages.id },
+          context: { message_id: messages?.id },
         }
       );
-      score=0
+      score = 0;
     }
-    
+
   } catch (error) {
     console.error("Error handling message:", error);
   }
