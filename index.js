@@ -43,7 +43,7 @@ app.post("/webhook", async (req, res) => {
   if(messages)
   console.log("messages",messages)
   const businessPhoneNumberId = req.body.entry?.[0].changes?.[0]?.value?.metadata?.phone_number_id;
-  if (messages !== undefined) console.log("messages", messages);
+
 
   if (!messages && field !== "messages") {
     return res.sendStatus(400);
