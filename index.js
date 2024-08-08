@@ -30,6 +30,7 @@ const sendWhatsAppMessage = async (businessPhoneNumberId, data) => {
 };
 app.post("/webhook", async (req, res) => {
   const status = req.body?.entry?.[0]?.changes?.[0]?.value?.statuses?.[0]?.status;
+  console.log("json",req.body.entry?.[0].changes[0])
   if(status)
   console.log("status", status);
   const field = req.body.entry[0].changes[0].field;
