@@ -78,21 +78,21 @@ app.post("/webhook", async (req, res) => {
                   type: "reply",
                   reply: {
                     id: "q2_rating_excellent",
-                    title: "Excellent"
+                    title: "Very"
                   }
                 },
                 {
                   type: "reply",
                   reply: {
                     id: "q2_rating_average",
-                    title: "Average"
+                    title: "Somewhat"
                   }
                 },
                 {
                   type: "reply",
                   reply: {
                     id: "q2_rating_poor",
-                    title: "Poor"
+                    title: "Not at all"
                   }
                 }
               ]
@@ -198,7 +198,7 @@ app.post("/webhook", async (req, res) => {
           type: "interactive",
           interactive: {
             type: "button",
-            body: { text: "How happy are you with your clinical results?\n" },
+            body: { text: "How was your experience with the reception team?\n" },
             action: {
               buttons: [
                 {
